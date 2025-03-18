@@ -1,5 +1,4 @@
 //index.js
-
 import Card from './Card.js';
 import Game from './Game.js';
 import TaskQueue from './TaskQueue.js';
@@ -52,7 +51,6 @@ class Dog extends Creature {
         super(name, power);
     }
 }
-
 
 class Lad extends Dog {
     constructor() {
@@ -110,7 +108,6 @@ class Lad extends Dog {
     }
 }
 
-
 class Trasher extends Dog {
     constructor() {
         super('Громила', 5);
@@ -151,14 +148,69 @@ class Gatling extends Card {
     }
 }
 
+class Rogue extends Creature {
+    constructor() {
+        super('Изгой', 2);
+    }
+
+    doBeforeAttack(gameContext, continuation) {
+        const target = gameContext.oppositePlayer.table[gameContext.position];
+        if (!target) {
+            continuation();
+            return;
+        }
+
+        const targetType = target.constructor;
+
+        const allCards = [
+            ...gameContext.currentPlayer.table,
+            ...gameContext.oppositePlayer.table
+        ];
+
+        const abilitiesToSteal = [
+            'modifyDealedDamageToCreature',
+            'modifyDealedDamageToPlayer',
+            'modifyTakenDamage'
+        ];
+
+        const stolenAbilities = {};
+
+
+        for (let card of allCards) {
+            if (card && card.constructor === targetType && !(card instanceof Rogue)) {
+                let proto = Object.getPrototypeOf(card);
+                for (let ability of abilitiesToSteal) {
+                    if (proto.hasOwnProperty(ability)) {
+                        if (!stolenAbilities[ability]) {
+                            stolenAbilities[ability] = proto[ability];
+                        }
+                        delete proto[ability];
+                    }
+                }
+            }
+        }
+
+        for (let ability in stolenAbilities) {
+            if (!this.hasOwnProperty(ability)) {
+                this[ability] = stolenAbilities[ability].bind(this);
+            }
+        }
+
+        gameContext.updateView();
+        continuation();
+    }
+}
+
 export default Gatling;
 
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Rogue(),
 ];
 const banditStartDeck = [
+    new Lad(),
     new Lad(),
     new Lad(),
 ];
