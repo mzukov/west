@@ -28,7 +28,17 @@ function getCreatureDescription(card) {
 class Creature extends Card {
     constructor(name, power) {
         super(name, power);
+        this._currentPower = power;
+        delete this.currentPower;
     }
+    get currentPower() {
+        return this._currentPower;
+    }
+    set currentPower(value) {
+        this._currentPower = Math.min(value, this.maxPower);
+        this.updateView();
+    }
+
     getDescriptions() {
         return [ getCreatureDescription(this), ...super.getDescriptions() ];
     }
@@ -161,20 +171,16 @@ class Rogue extends Creature {
         }
 
         const targetType = target.constructor;
-
         const allCards = [
             ...gameContext.currentPlayer.table,
             ...gameContext.oppositePlayer.table
         ];
-
         const abilitiesToSteal = [
             'modifyDealedDamageToCreature',
             'modifyDealedDamageToPlayer',
             'modifyTakenDamage'
         ];
-
         const stolenAbilities = {};
-
 
         for (let card of allCards) {
             if (card && card.constructor === targetType && !(card instanceof Rogue)) {
@@ -201,18 +207,35 @@ class Rogue extends Creature {
     }
 }
 
+class Brewer extends Duck {
+    constructor() {
+        super('Пивовар', 2);
+    }
+    doBeforeAttack(gameContext, continuation) {
+        const allCards = gameContext.currentPlayer.table.concat(gameContext.oppositePlayer.table);
+        for (let card of allCards) {
+            if (isDuck(card)) {
+                card.maxPower += 1;
+                card.currentPower = card.currentPower + 2;
+                card.view.signalHeal(() => {});
+                card.updateView();
+            }
+        }
+        continuation();
+    }
+}
+
 export default Gatling;
 
 const seriffStartDeck = [
     new Duck(),
-    new Duck(),
-    new Duck(),
-    new Rogue(),
+    new Brewer(),
 ];
 const banditStartDeck = [
-    new Lad(),
-    new Lad(),
-    new Lad(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
 ];
 
 const game = new Game(seriffStartDeck, banditStartDeck);
