@@ -67,16 +67,46 @@ class Trasher extends Dog {
     }
 }
 
+class Gatling extends Card {
+    constructor() {
+        super('Гатлинг', 6);
+    }
+
+    attack(gameContext, continuation) {
+        const taskQueue = new TaskQueue();
+        // Сначала показываем анимацию атаки
+        taskQueue.push(onDone => this.view.showAttack(onDone));
+        // Получаем стол противника
+        const opponentTable = gameContext.oppositePlayer.table;
+        // Наносим 2 урона каждой карте противника по очереди
+        opponentTable.forEach(card => {
+            taskQueue.push(onDone => {
+                if (card) {
+                    // Наносим 2 урона выбранной карте противника
+                    this.dealDamageToCreature(2, card, gameContext, onDone);
+                } else {
+                    onDone();
+                }
+            });
+        });
+        taskQueue.continueWith(continuation);
+    }
+}
+
+export default Gatling;
 
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Gatling(),
 ];
-
 const banditStartDeck = [
+    new Trasher(),
+    new Dog(),
     new Dog(),
 ];
+
 
 const game = new Game(seriffStartDeck, banditStartDeck);
 
