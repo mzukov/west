@@ -1,7 +1,7 @@
 import Card from './Card.js';
 import Game from './Game.js';
 import TaskQueue from './TaskQueue.js';
-import SpeedRate from './SpeedRate.js';
+import SpeedRate from './SpeedRate.js'; //
 
 function isDuck(card) {
     return card && card.quacks && card.swims;
