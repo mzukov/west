@@ -1,7 +1,9 @@
+// index.js
 import Card from './Card.js';
 import Game from './Game.js';
 import TaskQueue from './TaskQueue.js';
 import SpeedRate from './SpeedRate.js';
+import { Duck, Dog } from './Сreature.js';  
 
 function isDuck(card) {
     return card && card.quacks && card.swims;
@@ -22,24 +24,6 @@ function getCreatureDescription(card) {
         return 'Собака';
     }
     return 'Существо';
-}
-
-class Duck extends Creature {
-    constructor(name = 'Мирная утка', power = 2) {
-        super(name, power);
-    }
-    quacks() {
-        console.log('quack');
-    }
-    swims() {
-        console.log('float: both;');
-    }
-}
-
-class Dog extends Creature {
-    constructor(name = 'Пес-бандит', power = 3) {
-        super(name, power);
-    }
 }
 
 const seriffStartDeck = [
