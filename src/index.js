@@ -50,18 +50,13 @@ class Trasher extends Dog {
     }
 
     modifyTakenDamage(value, fromCard, gameContext, continuation) {
-        // При атаке, до нанесения урона, карта мигает "белым"
-        // и урон уменьшается на 1.
         this.view.signalAbility(() => {
-            // После завершения мигания вызываем continuation с уменьшенным уроном.
             continuation(value - 1);
         });
     }
 
     getDescriptions() {
-        // Получаем описание из базового класса (чтобы не потерять информацию об "Утке" или "Собаке")
         const baseDescriptions = super.getDescriptions();
-        // Добавляем краткое описание способности "Громилы"
         baseDescriptions.push('Получает на 1 меньше урона');
         return baseDescriptions;
     }
@@ -72,10 +67,10 @@ const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Duck(),
 ];
-
 const banditStartDeck = [
-    new Dog(),
+    new Trasher(),
 ];
 
 const game = new Game(seriffStartDeck, banditStartDeck);
