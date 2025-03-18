@@ -44,6 +44,63 @@ class Dog extends Card {
     }
 }
 
+class Lad extends Dog {
+    constructor() {
+        super('Браток', 2);
+    }
+
+    static getInGameCount() {
+        return this.inGameCount || 0;
+    }
+    static setInGameCount(value) {
+        this.inGameCount = value;
+    }
+    static getBonus() {
+        const count = this.getInGameCount();
+        return count * (count + 1) / 2;
+    }
+
+    doAfterComingIntoPlay(gameContext, continuation) {
+        Lad.setInGameCount(Lad.getInGameCount() + 1);
+        if (super.doAfterComingIntoPlay) {
+            super.doAfterComingIntoPlay(gameContext, continuation);
+        } else {
+            continuation();
+        }
+    }
+
+    doBeforeRemoving(continuation) {
+        Lad.setInGameCount(Lad.getInGameCount() - 1);
+        if (super.doBeforeRemoving) {
+            super.doBeforeRemoving(continuation);
+        } else {
+            continuation();
+        }
+    }
+
+    modifyDealedDamageToCreature(value, toCard, gameContext, continuation) {
+        const bonus = Lad.getBonus();
+        continuation(value + bonus);
+    }
+
+    modifyTakenDamage(value, fromCard, gameContext, continuation) {
+        const bonus = Lad.getBonus();
+        continuation(value - bonus);
+    }
+
+    getDescriptions() {
+        const baseDescriptions = super.getDescriptions();
+        if (
+            Lad.prototype.hasOwnProperty('modifyDealedDamageToCreature') ||
+            Lad.prototype.hasOwnProperty('modifyTakenDamage')
+        ) {
+            baseDescriptions.push('Чем их больше, тем они сильнее');
+        }
+        return baseDescriptions;
+    }
+}
+
+
 class Trasher extends Dog {
     constructor() {
         super('Громила', 5);
@@ -69,15 +126,11 @@ class Gatling extends Card {
 
     attack(gameContext, continuation) {
         const taskQueue = new TaskQueue();
-        // Сначала показываем анимацию атаки
         taskQueue.push(onDone => this.view.showAttack(onDone));
-        // Получаем стол противника
         const opponentTable = gameContext.oppositePlayer.table;
-        // Наносим 2 урона каждой карте противника по очереди
         opponentTable.forEach(card => {
             taskQueue.push(onDone => {
                 if (card) {
-                    // Наносим 2 урона выбранной карте противника
                     this.dealDamageToCreature(2, card, gameContext, onDone);
                 } else {
                     onDone();
@@ -94,14 +147,11 @@ const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
-    new Gatling(),
 ];
 const banditStartDeck = [
-    new Trasher(),
-    new Dog(),
-    new Dog(),
-
-]
+    new Lad(),
+    new Lad(),
+];
 
 const game = new Game(seriffStartDeck, banditStartDeck);
 
